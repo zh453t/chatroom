@@ -1,0 +1,42 @@
+html {
+	font-size: 4.5vw
+}
+
+body {
+	min-height: unset;
+	height: 100vh;
+	justify-content: flex-start;
+}
+
+main.chat-container {
+	width: fit-content;
+	min-height: 70vh;
+	height: fit-content;
+	padding-bottom: 50vh;
+}
+section.input-form {
+	padding: 0;
+}
+
+section.input-form input#fileUpload,
+section.input-form #clear-button,
+section.input-form a {
+	display: none;
+}
+
+h2 button {
+	display: none;
+}
+
+.chat-messages {
+	padding: 0;
+}
+
+form.chat-input .input--textarea {
+	min-width: unset;
+	width: 90%;
+}
+form.chat-input label.username--input input {
+	min-width: unset;
+	width: 27vw;
+}
