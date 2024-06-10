@@ -1,5 +1,9 @@
 {
+  "name": "chatroom",
+  "version": "1.0.1",
+  "homepage": "https://github.com/zh453t",
   "dependencies": {
     "express": "^4.18.2"
-  }
+  },
+  "type": "module"
 }

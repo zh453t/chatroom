@@ -1,19 +1,19 @@
 'use strict';
 import express from 'express';
-import fs, { readFileSync } from 'fs';
-import { init, sendErrorResponse } from './helpers.mjs';
-
+import fs from 'fs';
+import { resetFile, sendErrorResponse } from './helpers.js';
+import config from './config.js';
 const app = express();
 app.use(express.json());
-const config = JSON.parse(readFileSync('./config.json', 'utf-8', (err) => console.error(err)));
 
 const state = {
 	replies: JSON.parse(fs.readFileSync(config.dirs.repliesData, 'utf-8')),
 };
 
+// publish static files
 app.use(express.static('./pub'));
 
-// ------------ 消息 --------------- //
+// ------------ messages --------------- //
 
 /**
  * 添加消息
@@ -32,12 +32,14 @@ const postMessages = (req, res) => {
 		// parse
 		if (!data) {
 			sendErrorResponse(res, 'Please try again 请重试一次');
-			return init(config.dirs.msgData);
+			resetFile(config.dirs.msgData);
+			return;
 		}
 		const json = JSON.parse(data);
 		if (!Array.isArray(json)) {
 			sendErrorResponse(res, 'Please try again 请重试一次');
-			return init(config.dirs.msgData);
+			resetFile(config.dirs.msgData);
+			return;
 		}
 
 		// push
@@ -51,7 +53,7 @@ const postMessages = (req, res) => {
 };
 app.route(config.endpoints.message).post(postMessages);
 
-// ----- 评分 ---- //
+// ----- ratings ---- //
 
 /**
  * 添加评分 {id, rating}
@@ -60,7 +62,7 @@ app.route(config.endpoints.message).post(postMessages);
  */
 const postRatings = (req, res) => {
 	// 检查
-	if (!req.body.every((v) => v.id && v.rating)) {
+	if (!req.body.every((v) => v.id && v.allRatings)) {
 		res.status(400).send('Cannot post: Invalid syntax');
 		return;
 	}
@@ -72,16 +74,16 @@ const postRatings = (req, res) => {
 };
 app.route(config.endpoints.rating).post(postRatings);
 
-// ------- 回复 ------ //
+// ------- replies ------ //
 /**
- * 添加评分 {content, for, time}
+ * 添加评分 {text, to, time}
  * @param {import("express").Request} req
  * @param {import("express").Response} res
  */
 const postReply = (req, res) => {
 	const reply = req.body;
 	// 检查
-	if (!reply || !reply.content || !reply.for || !reply.time) {
+	if (!reply || !reply.text || !reply.to || !reply.time) {
 		res.status(400).send('Cannot post: Invalid syntax');
 		return;
 	}

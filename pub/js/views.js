@@ -1,5 +1,5 @@
 'use strict';
-import { Message, calcAvg } from './helpers.js';
+import { Message, Reply, Rating } from './structs.js';
 import { state } from './model.js';
 
 // ------------ 消息 ------------ //
@@ -17,9 +17,9 @@ class ChatView {
 	};
 
 	/**
-   * 生成在 <ul class="chat-messages"></ul> 中的 html
+	 * 生成在 <ul class="chat-messages"></ul> 中的 html
 	 * generate html texts inside <ul class="chat-messages"></ul>
-	 * @param {[]} messages
+	 * @param {Message[]} messages
 	 * @returns
 	 */
 	#generateMsgHTML(messages) {
@@ -29,7 +29,7 @@ class ChatView {
 		return messages
 			.reverse()
 			.map((m) => {
-				// 时间，从 id 中获取(id是36进制的时间)
+				// 时间，从 time 中获取
 				const date = new Date(m.time).toLocaleString();
 				// 评分框
 				const ratingBar = `<section data-id="${m.id}" class="ratingBlock">
@@ -42,9 +42,9 @@ class ChatView {
 				<div class="info-cell">${this.#icons.userIcon}<span class="msg-user">${m.user}</span></div>
 				</div>`;
 
-				const displayContent = m.content.replaceAll('\n\n', '\n').replaceAll('\n', '</p><p>');
+				const displayContent = m.text.replaceAll('\n\n', '\n').replaceAll('\n', '</p><p>');
 
-				const mainMsg = m.content.includes('\n') ? `<div class="msg-content return"><p>${displayContent}</p></div>` : `<div class="msg-content"><p>${displayContent}</p></div>`;
+				const mainMsg = m.text.includes('\n') ? `<div class="msg-content return"><p>${displayContent}</p></div>` : `<div class="msg-content"><p>${displayContent}</p></div>`;
 
 				// 合并成一个 <li>
 				return `<li class="chat-content" data-id="${m.id}">
@@ -58,7 +58,7 @@ class ChatView {
 
 	/**
 	 * 渲染消息 render messages
-	 * @param {obj[]} messages 例如 { content: "内容", id: "lnssdsag", user: "", time: }
+	 * @param {Message[]} messages 例如 { text: "内容", id: "lnssdsag", user: "", time: }
 	 */
 	update(messages) {
 		const messageHTML = this.#generateMsgHTML(messages);
@@ -79,11 +79,11 @@ class ChatView {
 
 	/**
 	 * 渲染回复
-   * render
-	 * @param {{content: string, for: string, time: number}} reply
+	 * render
+	 * @param {Reply} reply
 	 */
 	renderReply(reply) {
-		const container = this.#messageContainer.querySelector(`.chat-content[data-id="${reply.for}"] ul.reply`);
+		const container = this.#messageContainer.querySelector(`.chat-content[data-id="${reply.to}"] ul.reply`);
 		if (!container) return console.warn('reply for an unknown message.', reply);
 		const time = new Date(reply.time).toLocaleString();
 
@@ -91,28 +91,28 @@ class ChatView {
 		container.insertAdjacentHTML(
 			'beforeend',
 			`<li class="reply-msg">
-    <section class="reply-content">${reply.content}</section>
+    <section class="reply-content">${reply.text}</section>
     <section class="reply-info"><div class="info-cell">${this.#icons.clockIcon}${time}</div></section>
     </li>`
 		);
 	}
 
-  /**
-   * 清除特定id的回复
-   * clear reply by message id
-   * @param {string} id 
-   */
+	/**
+	 * 在页面上清除特定id的回复
+	 * clear reply by message id
+	 * @param {string} id
+	 */
 	clearReply(id) {
 		const container = this.#messageContainer.querySelector(`.chat-content[data-id="${id}"] ul.reply`);
 		if (!container) return console.warn(`reply for an unknown message (id: ${id}).`);
 		container.innerHTML = '';
 	}
 
-  /**
-   * 回复事件监听器
-   * Reply event listener
-   * @param {function} handler 
-   */
+	/**
+	 * 回复事件监听器
+	 * Reply event listener
+	 * @param {function} handler
+	 */
 	onreply(handler) {
 		this.#messageContainer.addEventListener('click', (e) => {
 			const clickedElement = e.target.closest('.chat-content');
@@ -122,7 +122,7 @@ class ChatView {
 		});
 	}
 	/**
-	 * 清除页面上的所有消息
+	 * **清除页面上的所有消息**
 	 */
 	clearAll() {
 		this.#messageContainer.innerHTML = '';
@@ -130,7 +130,7 @@ class ChatView {
 
 	/**
 	 * 查看现在渲染的消息
-   * look up rendered html texts now
+	 * look up rendered html now
 	 */
 	get nowHTML() {
 		return this.#messageContainer.innerHTML;
@@ -140,16 +140,16 @@ class ChatView {
 // --------- 评分 ----------- //
 
 class RatingsView {
-	avgRating;
+	// avgRating;
 	get #ratingContainers() {
 		return [...document.querySelectorAll('.ratingBlock')];
 	}
 	chatContainer = document.querySelector('.chat-messages');
 
-  /**
-   * <section class="ratingBlock"> 事件监听器 | .ratingBlock click event listener
-   * @param {function} handler 
-   */
+	/**
+	 * <section class="ratingBlock"> 事件监听器 | .ratingBlock click event listener
+	 * @param {function} handler
+	 */
 	onclick(handler) {
 		this.chatContainer.addEventListener('click', (e) => {
 			const ratingBlock = e.target.closest('.ratingBlock');
@@ -161,18 +161,14 @@ class RatingsView {
 
 	/**
 	 * 渲染评分
-   * render ratings
-	 * @param {object} _
-	 * @param {string} _.id
-	 * @param {num[]} _.rating
+	 * render ratings
+	 * @param {{id: string, allRatings: number[]}} _
 	 */
-	render({ id, rating }) {
-		const avgRating = calcAvg(rating);
-		// console.log(this.#ratingContainers.map(e => e.dataset.id), state.ids)
-		// 完全一样
+	render({ id, allRatings }) {
+		const ratingsAvg = Rating.calcAvg(allRatings);
 		const index = state.ids.indexOf(id);
 		if (index === -1) {
-      // 如果找不着，放进待清除名单
+			// 如果找不着，放进待清除名单
 			state.wasteIDs.push(id);
 			return;
 		} // 根本没有
@@ -180,8 +176,8 @@ class RatingsView {
 		const container = this.#ratingContainers[index];
 		const bar = container.querySelector('.ratingBar div');
 
-		this.#renderText(container, avgRating);
-		this.#renderBar(bar, avgRating);
+		this.#renderText(container, ratingsAvg);
+		this.#renderBar(bar, ratingsAvg);
 	}
 
 	/**
@@ -195,12 +191,11 @@ class RatingsView {
 
 	/**
 	 * 渲染彩色小条
-   * render rating bar
+	 * render rating bar
 	 * @param {Element} ratingBar
 	 * @param {Number} ratingValue
 	 */
 	#renderBar(ratingBar, ratingValue) {
-
 		ratingBar.style.width = `${ratingValue}%`;
 
 		if (ratingValue < 60) ratingBar.classList.add('red');
@@ -220,6 +215,11 @@ class InputView {
 	 * @param {function} eventListener
 	 */
 	oninput(eventListener) {
+		
+		/**
+		 * 
+		 * @param {Event} e 
+		 */
 		const handler = function (e) {
 			e.preventDefault();
 			eventListener(this.inputMessage);
@@ -242,6 +242,10 @@ class InputView {
 
 class Time {
 	#timeElememt = document.querySelector('#time');
+	/**
+	 * render time
+	 * @param {string} time locale time string
+	 */
 	#render(time) {
 		this.#timeElememt.textContent = time;
 	}
@@ -254,7 +258,7 @@ class Time {
 			setInterval(() => {
 				this.#render(new Date().toLocaleTimeString());
 			}, 1000);
-		}, 1000 - mStart); // 用 1000 - 现在的毫秒数，之后再 setInterval 😎
+		}, 1000 - mStart); //😎
 	}
 }
 
@@ -262,5 +266,3 @@ export const inputView = new InputView();
 export const chatView = new ChatView();
 new Time();
 export const ratingsView = new RatingsView();
-
-// setTimeout(() => {chatView.renderReply({for: "lpcgaqmg", time: Date.now(), content: "ylg"})}, 500)
