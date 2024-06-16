@@ -1,22 +1,15 @@
 export class Message {
-	/** @type {string} */ type = 'message';
+	// /** @type {string} */ type = 'message';
 	/** @type {string} */ text;
 	/** @type {string} */ user;
 	/** @type {number} */ time = Date.now();
-	/** @type {string} */ id = this.#genID();
+	// Generate ID
+	/** @type {string} */ id = (this.time + Math.trunc(Math.random() * 10000000)).toString(36);
 
 	/** @param {{text: string, user: string}} _ */
 	constructor({ text, user }) {
 		this.text = text;
 		this.user = user;
-	}
-
-	/**
-	 * Generate ID
-	 * @returns {string}
-	 */
-	#genID() {
-		return (this.time + Math.trunc(Math.random() * 10000000)).toString(36);
 	}
 }
 
@@ -28,7 +21,7 @@ export class Reply extends Message {
 	/** @type {string} */ to;
 
 	/** @param {{text: string, user: string, to: string}} _ */
-	constructor({ text, user = undefined, to }) {
+	constructor({ text, user, to }) {
 		super({ text, user });
 		this.to = to;
 	}

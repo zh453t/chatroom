@@ -101,14 +101,14 @@ const fetchReply_C = () => {
 const sendReply_C = (id) => {
 	const text = prompt('回复：');
 	if (!text) return;
-	const reply = new Reply({ text, to: id });
+	const reply = new Reply({ text, user: model.state.user, to: id });
 	model.sendReply(reply);
 	fetchReply_C();
 };
 // ------- 结束 ----------- //
 
 // views.chatView.clearBtnOnclick(pwdCtrl);
-views.inputView.oninput(sendMsg_C);
+views.inputView.onsubmit(sendMsg_C);
 views.ratingsView.onclick(sendRatings_C);
 views.chatView.onreply(sendReply_C);
 fetchMsg_C();

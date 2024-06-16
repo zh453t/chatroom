@@ -39,6 +39,10 @@ export const state = {
 
 	/** @type {string[]} */
 	wasteIDs: [],
+
+	/** @type {string} */
+	// 从 localStorage 中读取
+	user: localStorage.getItem("user") ?? "",
 };
 
 /**
