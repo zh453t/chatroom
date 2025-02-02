@@ -11,10 +11,6 @@
     line-height: 1.9;
   }
 
-  /* output {
-    display: block;
-    white-space: pre-wrap;
-  } */
   ul {
     list-style: none;
     margin: 0;
@@ -186,6 +182,8 @@
     .chat-messages > .chat-content .msg-info {
       white-space: nowrap;
       padding-left: 1em;
+      display: flex;
+      gap: 1em;
     }
 
     .chat-messages > .chat-content .info-cell {

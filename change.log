@@ -1,6 +1,11 @@
+v2.0.0 (2025/02/02)
+1. 使用 WebSocket 实现消息同步，重构各类消息发送和接收逻辑
+2. 使用 documentFragment 优化消息渲染，弃用 html 字符串拼接
+3. 将 ReplyView 从 ChatView 中分离出来
+
 v1.0.1 (2024/06/10)
-增加 Reply Rating 类，重构部分代码
-增加类型注释
+1. 增加 Reply Rating 类，重构部分代码
+2. 增加类型注释
 
 v1.0.0 (2024/06/02)
 增加注释

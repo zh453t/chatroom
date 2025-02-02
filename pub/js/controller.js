@@ -1,104 +1,104 @@
 'use strict';
 import * as model from './model.js';
 import * as views from './views.js';
-import { hasEmptyValues } from './helpers.js';
 import { Reply, Message, Rating } from './structs.js';
 
-// -------------------------- //
-
-// *_C 是 controller 中特有的函数，这些都绑定到了 views.js 里的事件监听器上，详见最后几行
-
-// 1.1 获取消息 (fetch)
-const fetchMsg_C = () => {
+/**
+ * 初始化消息
+ */
+const initMessage = () => {
 	model
-		.getMessage()
+		.get('message')
 		.then((messages) => {
-			// 0. Guard clause
+			// 检查
 			if (!messages) throw new Error('no messages!');
 
 			// 1. 渲染视图
-			views.chatView.update(messages);
+			views.chatView.render(messages);
 			// 2. 更新评分
-			fetchRatings_C();
+			initRatings();
 			// 3. 更新回复
-			fetchReply_C();
+			initReply();
 		})
 		.catch(console.error);
 };
 
-/** 1.2 发送消息
+/**
+ * 发送消息
  * @param {Message} inputMessage
  */
-const sendMsg_C = function (inputMessage) {
-	// 1. 检查
-	if (!hasEmptyValues(inputMessage)) {
+const sendMessage = function (inputMessage) {
+	// 检查
+	if (inputMessage.hasEmptyValues) {
 		alert('用户名或消息不能为空 ');
 		return;
 	}
 
-	// 2. 清除
-	views.inputView.clearAll();
+	// 清除
+	views.inputView.clear();
 
-	// 3. 发送
-	model.sendMessage(inputMessage);
-
-	fetchMsg_C();
+	// 发送
+	model.send(inputMessage);
+	// 渲染 可以等 broadcast() 之后再渲染
+	// views.chatView.append(inputMessage);
 };
 
-// ------ 4 评分 ------------ //
-
-// 4.1 获取评分
-const fetchRatings_C = () => {
+/**
+ * 初始化评分
+ */
+const initRatings = () => {
 	model
-		.getRatings()
-		.then((ratings) => {
-			ratings.forEach((rating) => {
-				views.ratingsView.render(rating);
-			});
+		.get('rating')
+		.then((data) => {
+			// 存入 state
+			model.state.ratings = data;
+			// 渲染
+			data.forEach(
+				/** @param {{id, ratings}} rating */
+				function renderRating(rating) {
+					views.ratingsView.render(rating);
+				}
+			);
 		})
 		.catch(console.error);
 };
 
-// 4.2
 /**
  * 发送评分 (Controller)
  * @param {string} id
- * @returns {undefined}
  */
-const sendRatings_C = (id) => {
+const sendRating = (id) => {
 	const value = parseInt(prompt('给出你的评分'));
 	const rating = new Rating({ id, value });
 	// 检查评分是否合规
 	if (!rating.isValid) {
-		console.warn('评分不合规 Invalid Rating');
+		console.warn('评分不合规');
 		return;
 	}
 
-	model.sendRatings(rating);
-	fetchRatings_C();
+	// 发送
+	model.send(rating);
+	// 等收到 broadcast 后再渲染
 };
 
-// ---------- 5 回复 --------- //
-
-const fetchReply_C = () => {
-	model.getReply().then((replies) => {
-		// 找到有回复的id
-		const ids = new Set(replies.map((v) => v.to));
-		// 清空之前显示的回复
-		ids.forEach((id) => views.chatView.clearReply(id));
-		// 渲染回复
+/**
+ * 初始化回复
+ */
+const initReply = () => {
+	model.get('reply').then((replies) => {
+		// 逐条渲染
 		replies.forEach((reply) => {
-			views.chatView.renderReply(reply);
+			views.replyView.render(reply);
 		});
 	});
 };
 
 /**
- * **发送回复** (Controller)
- * @param {string} id
- * @returns {undefined}
+ * 发送回复
+ * @param {string} id - 目标消息的 ID
  */
-const sendReply_C = (id) => {
+const sendReply = (id) => {
+	// 获取回复
 	const text = prompt('回复：');
 	if (!text) return;
 	const reply = new Reply({ text, user: model.state.user, to: id });

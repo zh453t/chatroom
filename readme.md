@@ -1,16 +1,14 @@
 # 安装
 环境需求：
  - node.js
- - npm
-本项目只使用 express
-```bash
-npm i express
-node server.mjs
-```
 
+```bash
+npm install express ws
+node server.js
+```
+本项目使用 `express` 托管静态文件，使用 `WebSocket` 实时通讯
 # 配置
-配置均在`config.json`中
- - "port" 监听端口
- - "hostname" 监听主机地址
- - "endpoints" 管理前端请求的路由，需要在`pub/js/model.js`里同步改动。
- - 
+在 `pub/config.js` 中
+ - `port` 监听端口
+ - `hostname` 监听主机地址
+ - `dir` 数据库文件存放路径

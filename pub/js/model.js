@@ -1,18 +1,9 @@
-// ratAll ==> All Ratings, 所有的评分 // 形式: [{id, rating}, ...]
-// rating 单个评分
-
-import { getJSON, postJSON } from './helpers.js';
 import { Message, Reply, Rating } from './structs.js';
+import config from '../config.js';
 
 export const state = {
-	/** @type {Message[]} */
-	messages: [],
-	/** @type {string[]} */
-	get ids() {
-		return this.messages.map((m) => m.id);
-	},
-	/** @type {{id: string, allRatings: number[]}[]} */
 	ratings: [],
+<<<<<<< HEAD
 	/** @type {{id: string, allRatings: number[]}[]} */
 	get filteredRatings() {
 		return this.ratings.filter((r) => {
@@ -43,67 +34,31 @@ export const state = {
 	/** @type {string} */
 	// 从 localStorage 中读取
 	user: localStorage.getItem("user") ?? "",
+=======
+>>>>>>> 64ce306 (Websocket Version (v2.0.0))
 };
 
+// -- websocket --
+export const socket = new WebSocket(`ws://${config.hostname}:${config.port.websocket}`);
+
+// -- http --
 /**
- * 和 state 里面的 messages 比对，如果一样就返回null⬇️
- * @returns {Promise<array>}
+ * get everyting
+ * @param {string} type 
+ * @returns {Promise<Message[] | {id, ratings}[] | Reply[]>} promise from fetch()
  */
-export async function getMessage() {
-	const messages = await getJSON('./database/messages.json');
-
-	if (state.messages === messages) return null;
-
-	state.messages = messages;
-	return messages;
-	// 这是一个数组，包含所有messag1es对象Object { text: "？", time: "2023-09-09 17:57:48" }
-}
+export const get = (type) => fetch(`${config.dirs[type].replace('./pub/', './')}`).then((res) => res.json());
 
 /**
- * 发送文字信息
- * @param {Message} message
+ * send everyting
+ * @param {Message | Reply | Rating} data
  */
-export function sendMessage(message) {
-	postJSON('./api/messages', message);
-}
+export const send = (data) => {
+	// 错误处理
+	if (!socket.readyState === WebSocket.OPEN) {
+		throw new Error('Websocket is closed');
+	}
 
-// -------- 评分 ------------- //
-
-/**
- * 获取评分
- * @returns {Promise<{id: string, allRatings: number[]}[]>}
- */
-export async function getRatings() {
-  const ratings = await getJSON('./database/ratings.json')
-	state.ratings = ratings;
-	return ratings;
-}
-
-/**
- * 发送新的评分， newRating 是一个 Setter, 会在ratings里追加 { id, rating }
- * @param {Rating} rating
- */
-export function sendRatings(rating) {
-  console.info(`sending rating for ${rating.id}: ${rating.value}`)
-	state.newRating = rating;
-	const ratings = state.wasteIDs ? state.filteredRatings : state.ratings;
-	postJSON('./api/ratings', ratings);
-}
-
-// --------- 回复 ---------- //
-/**
- * 发送回复至服务器
- * @param {Reply} reply
- */
-export function sendReply(reply) {
-	postJSON('./api/reply', reply);
-}
-
-/**
- * 获取回复
- * @returns {Promise<Reply[]>}
- */
-export async function getReply() {
-	const replies = await getJSON('./database/replies.json');
-	return replies;
-}
+	// 使用 socket 发送
+	socket.send(JSON.stringify(data))
+};

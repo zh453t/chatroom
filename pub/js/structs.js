@@ -11,6 +11,34 @@ export class Message {
 		this.text = text;
 		this.user = user;
 	}
+
+	/**
+	 * Generate ID
+	 * @returns {string}
+	 */
+	#genID() {
+		return (this.time + Math.trunc(Math.random() * 10000000)).toString(36);
+	}
+
+	/**
+	 * 检查是否有空值
+	 * @returns {boolean} 是否有空值
+	 * @example const msg = new Message({text: '', user: 'user'});
+	 * msg.hasEmptyValues; // true
+	 * @example const msg = new Message({text: 'text', user: 'user'});
+	 * msg.hasEmptyValues; // false
+	 * @example const msg = new Message({text: 'text', user: ''});
+	 * msg.hasEmptyValues; // true
+	 * @example const msg = new Message({text: '', user: ''});
+	 * msg.hasEmptyValues; // true
+	 */ 
+	get hasEmptyValues() {
+		// 如果是map:
+		// const values = [...map.values()];
+		const values = Object.values(this);
+		// 有空的就返回 false
+		return values.every((value) => value !== '');
+	}
 }
 
 /**
@@ -28,6 +56,7 @@ export class Reply extends Message {
 }
 
 export class Rating {
+	/** @type {string} */ type = 'rating';
 	/** @type {string} */ id;
 	/** @type {number} */ value;
 	constructor({ id, value }) {
@@ -53,3 +82,6 @@ export class Rating {
 		return Math.round(sum / arr.length);
 	}
 }
+
+// 数据库中的 rating 数据结构
+// {id: string, ratings: number[]}

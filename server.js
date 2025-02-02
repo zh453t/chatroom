@@ -1,134 +1,84 @@
-"use strict";
-import express from "express";
-import fs from "fs";
-import * as h from "./helpers.js";
-import config from "./config.js";
+'use strict';
+import express from 'express';
+import * as fs from 'fs/promises';
+import { WebSocketServer, WebSocket } from 'ws';
+import config from './pub/config.js';
+
+// -- HTTP --
 const app = express();
-app.use(express.json());
+app.use(express.static('./pub'));
 
-const state = {
-  replies: JSON.parse(fs.readFileSync(config.dirs.repliesData, "utf-8")),
+app.listen(config.port.http, config.hostname, () => {
+	console.info(`[HTTP] Listening on ${config.hostname}:${config.port.http}`);
+});
+
+// -- WebSocket --
+const WSServer = new WebSocketServer({ port: config.port.websocket });
+
+// WebSocket Helpers
+const updateFile = async (data) => {
+	// 分离 `type` 属性和其他属性，复制 data 因为 broadcast() 会用到
+	if (!data.type) return;
+	const { type, ...datacopy } = data;
+	const path = config.dirs[type];
+
+	try {
+		// 读取文件，如果文件不存在，则初始化为空数组
+		let previousData = [];
+		try {
+			const fileContent = await fs.readFile(path, 'utf8');
+			previousData = JSON.parse(fileContent);
+		} catch (error) {
+			if (error.code !== 'ENOENT') throw error; // 忽略文件不存在的错误
+		}
+
+		// rating 因为数据结构不同，单独处理
+		// 发送 {type, id, value}
+		// 数据库中 {id, ratings}
+		if (type === 'rating') {
+			// 查找 id
+			let target = previousData.find((rating) => rating.id === data.id);
+
+			if (!target) {
+				target = { id: data.id, ratings: [] };
+				previousData.push(target);
+			}
+			target.ratings.push(data.value);
+		} else {
+			// 对于 message, reply
+			previousData.push(datacopy);
+		}
+		await fs.writeFile(path, JSON.stringify(previousData, null, 2));
+	} catch (error) {
+		console.error(error);
+	}
 };
 
-// publish static files
-app.use(express.static("./pub"));
-
-// ------------ messages --------------- //
-
-/**
- * 添加消息
- * @param {import("express").Request} req
- * @param {import("express").Response} res
- */
-const postMessages = (req, res) => {
-  if (!h.syntaxIsValid(req.body, ["user", "text"])) {
-    res.status(400).send("Cannot post: Invalid syntax");
-    return;
-  }
-  // if (!req.body.user && req.body.text) {
-
-  // 	return;
-  // }
-
-  fs.readFile(config.dirs.msgData, "utf-8", (err, data) => {
-    if (err) console.error(err);
-
-    // parse
-    if (!data) {
-      h.sendErrorResponse(res, "Please try again 请重试一次");
-      h.resetFile(config.dirs.msgData);
-      return;
-    }
-    const json = JSON.parse(data);
-    if (!Array.isArray(json)) {
-      h.sendErrorResponse(res, "Please try again 请重试一次");
-      h.resetFile(config.dirs.msgData);
-      return;
-    }
-
-    // push
-    json.push(req.body);
-    // write
-    fs.writeFile(config.dirs.msgData, JSON.stringify(json), (err) => {
-      if (err) console.error(err);
-      res.status(201).send("Success.");
-    });
-  });
-};
-app.route(config.endpoints.message).post(postMessages);
-
-// ----- ratings ---- //
-
-/**
- * 添加评分 {id, rating}
- * @param {import("express").Request} req
- * @param {import("express").Response} res
- */
-const postRatings = (req, res) => {
-  // 检查
-  if (!req.body.every((v) => v.id && v.allRatings)) {
-    res.status(400).send("Cannot post: Invalid syntax");
-    return;
-  }
-  // 更新文件
-  fs.writeFile(config.dirs.ratingsData, JSON.stringify(req.body), (err) => {
-    if (err) console.error(err);
-    res.status(201).send("Success.");
-  });
-};
-app.route(config.endpoints.rating).post(postRatings);
-
-// ------- replies ------ //
-/**
- * 添加评分 {text, to, time}
- * @param {import("express").Request} req
- * @param {import("express").Response} res
- */
-const postReply = (req, res) => {
-  const reply = req.body;
-  // 检查
-
-  if (!h.syntaxIsValid(reply, ["text", "to", "time"])) {
-    res.status(400).send("Cannot post: Invalid syntax");
-    return;
-  }
-
-  state.replies.push(reply);
-
-  fs.writeFile(
-    config.dirs.repliesData,
-    JSON.stringify(state.replies),
-    (err) => {
-      if (err) console.error(err);
-      res.status(201).send("Success.");
-    }
-  );
+const broadcast = (data) => {
+	WSServer.clients.forEach((client) => {
+		if (client.readyState === WebSocket.OPEN) {
+			client.send(JSON.stringify(data)); // 只发送给打开的连接
+		}
+	});
 };
 
-/**
- * 删评 time
- * @param {import("express").Request} req
- * @param {import("express").Response} res
- */
-const deleteReply = (req, res) => {
-  const { time } = req.body;
-  if (!time) {
-    res.status(400).send("Cannot delete: Invalid syntax");
-    return;
-  }
-  // state.replies = state.replies.filter((reply) => reply.time !== time);
-  fs.writeFile(
-    config.dirs.repliesData,
-    JSON.stringify(state.replies),
-    (err) => {
-      console.error(err);
-      res.status(201).send("Success.");
-    }
-  );
-};
+WSServer.on('connection', (ws) => {
+	console.info(`[WebSocket] NEW CONNECTION on ${config.hostname}:${config.port.websocket}`);
+	// ws.send('Welcome to the server!');
+	ws.on('message', (data, isBinary) => {
+		// JSON 解析并冻结
+		data = Object.freeze(JSON.parse(data));
 
-app.route(config.endpoints.reply).post(postReply).delete(deleteReply);
+		console.log(data);
 
-app.listen(config.port, config.hostname, () => {
-  console.log(`Listening on ${config.hostname}:${config.port}`);
+		// 更新文件内容
+		updateFile(data).then(() => {
+			// 传送新消息给所有socket连接
+			broadcast(data);
+		});
+	});
+});
+
+WSServer.on('close', () => {
+	console.info('[WebSocket] CLOSED');
 });
