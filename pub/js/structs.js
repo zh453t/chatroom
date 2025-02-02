@@ -1,5 +1,5 @@
 export class Message {
-	// /** @type {string} */ type = 'message';
+	/** @type {string} */ type = 'message';
 	/** @type {string} */ text;
 	/** @type {string} */ user;
 	/** @type {number} */ time = Date.now();
@@ -10,14 +10,6 @@ export class Message {
 	constructor({ text, user }) {
 		this.text = text;
 		this.user = user;
-	}
-
-	/**
-	 * Generate ID
-	 * @returns {string}
-	 */
-	#genID() {
-		return (this.time + Math.trunc(Math.random() * 10000000)).toString(36);
 	}
 
 	/**
@@ -36,8 +28,7 @@ export class Message {
 		// 如果是map:
 		// const values = [...map.values()];
 		const values = Object.values(this);
-		// 有空的就返回 false
-		return values.every((value) => value !== '');
+		return values.some((value) => value === '');
 	}
 }
 

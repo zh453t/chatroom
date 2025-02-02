@@ -12,145 +12,6 @@ const icons = {
 
 // 消息
 class ChatView {
-<<<<<<< HEAD
-  #messageContainer = document.querySelector(".chat-messages");
-  // svgs
-
-  /**
-   * 生成在 <ul class="chat-messages"></ul> 中的 html
-   * generate html texts inside <ul class="chat-messages"></ul>
-   * @param {Message[]} messages
-   * @returns
-   */
-  #generateMsgHTML(messages) {
-    if (!messages) throw new Error("没有messages!");
-
-    // 合成，转换成html
-    return messages
-      .reverse()
-      .map((m) => {
-        // 时间，从 time 中获取
-        const date = new Date(m.time).toLocaleString();
-        // 评分框
-        const ratingBar = `<section data-id="${m.id}" class="ratingBlock">
-        <div class="rating">--</div>
-        <div class="ratingBar"> <div></div></div>
-        </section>`;
-        // 时间，用户这些二级信息
-        const smallerText = `<div class="msg-info">
-				<div class="info-cell">${icons.clockIcon}${date}</div>
-				<div class="info-cell">${icons.userIcon}<span class="msg-user">${m.user}</span></div>
-				</div>`;
-
-        const displayContent = m.text
-          .replaceAll("\n\n", "\n")
-          .replaceAll("\n", "</p><p>");
-
-        const mainMsg = m.text.includes("\n")
-          ? `<div class="msg-content return"><p>${displayContent}</p></div>`
-          : `<div class="msg-content"><p>${displayContent}</p></div>`;
-
-        // 合并成一个 <li>
-        return `<li class="chat-content" data-id="${m.id}">
-        <section class="msg-main">${mainMsg}${smallerText}</section>
-        ${ratingBar}
-        <ul class="reply"></ul>
-        </li>`;
-      })
-      .join("");
-  }
-
-  /**
-   * 渲染消息 render messages
-   * @param {Message[]} messages 例如 { text: "内容", id: "lnssdsag", user: "", time: }
-   */
-  update(messages) {
-    const messageHTML = this.#generateMsgHTML(messages);
-    const prevHTML = this.nowHTML;
-    if (messageHTML === prevHTML) {
-      console.info("没有新的消息");
-      return;
-    }
-
-    // 如果新的html比现在的少：(可能是清空了)
-    if (!messageHTML.includes(prevHTML)) {
-      this.#messageContainer.innerHTML = messageHTML;
-      return;
-    }
-
-    this.#messageContainer.insertAdjacentHTML(
-      "beforeend",
-      messageHTML.replace(prevHTML, "")
-    );
-  }
-
-  /**
-   * 渲染回复
-   * render
-   * @param {Reply} reply
-   */
-  renderReply(reply) {
-    const container = this.#messageContainer.querySelector(
-      `.chat-content[data-id="${reply.to}"] ul.reply`
-    );
-    if (!container) return console.warn("reply for an unknown message.", reply);
-    const time = new Date(reply.time).toLocaleString();
-
-    // +=
-    container.insertAdjacentHTML(
-      "beforeend",
-      `<li class="reply-msg">
-    <section class="reply-content">${reply.text}</section>
-    <section class="reply-info">
-			<div class="info-cell">${icons.clockIcon}${time}</div>
-			<div class="info-cell">${icons.userIcon}${reply.user}</div>
-		</section>
-    </li>`
-    );
-  }
-
-  /**
-   * 在页面上清除特定id的回复
-   * clear reply by message id
-   * @param {string} id
-   */
-  clearReply(id) {
-    const container = this.#messageContainer.querySelector(
-      `.chat-content[data-id="${id}"] ul.reply`
-    );
-    if (!container)
-      return console.warn(`reply for an unknown message (id: ${id}).`);
-    container.innerHTML = "";
-  }
-
-  /**
-   * 回复事件监听器
-   * Reply event listener
-   * @param {function} handler
-   */
-  onreply(handler) {
-    this.#messageContainer.addEventListener("click", (e) => {
-      const clickedElement = e.target.closest(".chat-content");
-      if (clickedElement === null || e.target.closest(".ratingBlock")) return;
-      const id = clickedElement.dataset.id;
-      handler(id);
-    });
-  }
-  /**
-   * **清除页面上的所有消息**
-   */
-  clearAll() {
-    this.#messageContainer.innerHTML = "";
-  }
-
-  /**
-   * 查看现在渲染的消息
-   * look up rendered html now
-   */
-  get nowHTML() {
-    return this.#messageContainer.innerHTML;
-  }
-=======
 	msgContainer = document.querySelector('.chat-messages');
 
 	// svg 图表
@@ -336,7 +197,6 @@ class ReplyView extends ChatView {
 			handler(id);
 		});
 	}
->>>>>>> 64ce306 (Websocket Version (v2.0.0))
 }
 
 // 评分
@@ -360,46 +220,6 @@ class RatingsView {
     });
   }
 
-<<<<<<< HEAD
-  /**
-   * 渲染评分
-   * render ratings
-   * @param {{id: string, allRatings: number[]}} _
-   */
-  render({ id, allRatings }) {
-    const ratingsAvg = Rating.calcAvg(allRatings);
-    const index = state.ids.indexOf(id);
-    if (index === -1) {
-      // 如果找不着，放进待清除名单
-      state.wasteIDs.push(id);
-      return;
-    } // 根本没有
-
-    const container = this.#ratingContainers[index];
-    const bar = container.querySelector(".ratingBar div");
-
-    this.#renderText(container, ratingsAvg);
-    this.#renderBar(bar, ratingsAvg);
-  }
-
-  /**
-   * 渲染评分
-   * @param {Element} ratingContainer
-   * @param {Number} avgRating
-   */
-  #renderText(ratingContainer, avgRating) {
-    ratingContainer.querySelector(".rating").innerHTML = `${avgRating}`;
-  }
-
-  /**
-   * 渲染彩色小条
-   * render rating bar
-   * @param {Element} ratingBar
-   * @param {Number} ratingValue
-   */
-  #renderBar(ratingBar, ratingValue) {
-    ratingBar.style.width = `${ratingValue}%`;
-=======
 	/**
 	 * 渲染评分
 	 * render ratings
@@ -478,7 +298,6 @@ class RatingsView {
 	 */
 	#renderBar(ratingBar, ratingValue) {
 		ratingBar.style.width = `${ratingValue}%`;
->>>>>>> 64ce306 (Websocket Version (v2.0.0))
 
     if (ratingValue < 60) ratingBar.classList.add("red");
     else if (ratingValue < 80) ratingBar.classList.add("yellow");
@@ -493,37 +312,6 @@ class InputView {
   #inputEl = this.#form.querySelector(".input--textarea");
   #userEl = this.#form.querySelector(`input[name="user"]`);
 
-<<<<<<< HEAD
-  constructor() {
-    this.#userEl.value = state.user;
-  }
-  /**
-   * 文本输入时执行传入的函数
-   * @param {function} eventListener
-   */
-  onsubmit(eventListener) {
-    /** @param {Event} e  */
-    const handler = function (e) {
-      e.preventDefault();
-      eventListener(this.inputMessage);
-
-      // 存储用户名至 localStorage
-      localStorage.setItem("user", this.inputMessage.user);
-      console.log(`Hello, u: ${this.inputMessage.user}`);
-    };
-    this.#form.addEventListener("submit", handler.bind(this));
-  }
-
-  clearAll() {
-    this.#inputEl.value = "";
-  }
-
-  get inputMessage() {
-    const data = new FormData(this.#form);
-    const obj = Object.fromEntries(data.entries());
-    return new Message(obj);
-  }
-=======
 	/**
 	 * 文本输入时执行传入的函数
 	 * @param {function} eventListener
@@ -552,7 +340,6 @@ class InputView {
 		const obj = Object.fromEntries(data.entries());
 		return new Message(obj);
 	}
->>>>>>> 64ce306 (Websocket Version (v2.0.0))
 }
 
 // 时间

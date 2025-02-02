@@ -101,14 +101,41 @@ const sendReply = (id) => {
 	// 获取回复
 	const text = prompt('回复：');
 	if (!text) return;
-	const reply = new Reply({ text, user: model.state.user, to: id });
-	model.sendReply(reply);
-	fetchReply_C();
-};
-// ------- 结束 ----------- //
+	const reply = new Reply({ text, to: id });
 
-// views.chatView.clearBtnOnclick(pwdCtrl);
-views.inputView.onsubmit(sendMsg_C);
-views.ratingsView.onclick(sendRatings_C);
-views.chatView.onreply(sendReply_C);
-fetchMsg_C();
+	// 发送
+	model.send(reply);
+	// 等收到 broadcast 后再渲染
+};
+
+// bind events
+views.inputView.oninput(sendMessage);
+views.ratingsView.onclick(sendRating);
+views.replyView.onreply(sendReply);
+
+// 监听 WebSocket 消息
+model.socket.addEventListener('message', (ev) => {
+	let data;
+	try {
+		data = JSON.parse(ev.data);
+		if (!data.type) throw new Error('no type');
+	} catch (error) {
+		console.error('解析 WebSocket 消息失败:', error);
+	}
+	switch (data.type) {
+		case 'message':
+			views.chatView.append(data);
+			break;
+		case 'rating':
+			views.ratingsView.update(data);
+			break;
+		case 'reply':
+			views.replyView.render(data);
+			break;
+		default:
+			console.warn('未知类型的消息:', data);
+	}
+});
+
+// 初始化
+initMessage();
