@@ -14,7 +14,7 @@ export const socket = new WebSocket(`${config.protocols.websocket}://${window.lo
  * @param {string} type 
  * @returns {Promise<Message[] | {id, ratings}[] | Reply[]>} promise from fetch()
  */
-export const get = (type) => fetch(`${config.dirs[type].replace('./pub/', './')}`).then((res) => res.json());
+export const get = (type) => fetch(`./${type}`).then((res) => res.json());
 
 /**
  * send everyting

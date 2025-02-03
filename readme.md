@@ -13,3 +13,4 @@ node server.js
  - `hostname` 监听主机地址
  - `secure` 是否支持 `https` `wss` 等安全协议
  - `dir` 数据库文件存放路径
+   - 数据库文件可以存在任何地方

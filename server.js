@@ -2,11 +2,30 @@
 import express from 'express';
 import * as fs from 'fs/promises';
 import { WebSocketServer, WebSocket } from 'ws';
+import { createReadStream } from 'fs';
 import config from './pub/config.js';
 
 // -- HTTP --
 const app = express();
 app.use(express.static(config.dirs.static));
+
+app.get('/:type', async (req, res) => {
+	const type = req.params.type;
+	const path = config.dirs[type];
+
+	try {
+		await fs.access(path); // 检查文件是否存在
+		res.setHeader('Content-Type', 'application/json'); // 确保客户端知道是 JSON 数据
+		const stream = createReadStream(path, 'utf8'); // 直接读取文件流
+		stream.pipe(res); // 将文件流传送给客户端
+	} catch (error) {
+		if (error.code === 'ENOENT') {
+			res.status(404).send('File not found');
+		} else {
+			res.status(500).send('Internal server error');
+		}
+	}
+});
 
 app.listen(config.port.http, config.hostname, () => {
 	console.info(`[HTTP] Listening on ${config.hostname}:${config.port.http}`);
@@ -55,7 +74,7 @@ const updateFile = async (data) => {
 		}
 		await fs.writeFile(path, JSON.stringify(previousData, null, 2));
 	} catch (error) {
-		console.error('Error updating file:', error);	
+		console.error('Error updating file:', error);
 	}
 };
 

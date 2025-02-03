@@ -25,8 +25,6 @@
 
 	ul {
 		list-style: none;
-		margin: 0;
-		padding: 0;
 	}
 
 	button {
@@ -149,7 +147,7 @@
 
 	div.msg-info {
 		display: flex;
-		gap: 0.5em;
+		gap: 1em;
 	}
 
 	.info-cell {
@@ -198,6 +196,39 @@
 			background-color: #d76666;
 		}
 	}
+
+	@layer info {
+    /* 4 */
+    .chat-messages > .chat-content .msg-info {
+      white-space: nowrap;
+      padding-left: 1em;
+      display: flex;
+      gap: 1em;
+    }
+    .chat-messages > .chat-content .info-cell {
+      font-size: smaller;
+      display: flex;
+      align-items: center;
+      color: var(--text-color);
+    }
+    .chat-content .msg-info .msg-info-cell span.msg-user {
+      white-space: break-spaces;
+    }
+  }
+  @layer reply {
+    ul.chat-messages > li.chat-content ul.reply {
+      margin-top: 1em;
+      margin-right: 0.5em;
+      border-left: var(--text-color) 0.5em solid;
+    }
+    ul.chat-messages > li.chat-content .reply-info {
+      display: flex;
+      gap: 1em;
+    }
+    ul.chat-messages > li.chat-content ul.reply li.reply-msg {
+      margin-block: 0.5em;
+    }
+  }
 }
 
 /* 响应式设计 */
