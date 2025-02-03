@@ -11,4 +11,5 @@ node server.js
 在 `pub/config.js` 中
  - `port` 监听端口
  - `hostname` 监听主机地址
+ - `secure` 是否支持 `https` `wss` 等安全协议
  - `dir` 数据库文件存放路径

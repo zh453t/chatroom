@@ -6,7 +6,7 @@ export const state = {
 };
 
 // -- websocket --
-export const socket = new WebSocket(`ws://${config.hostname}:${config.port.websocket}`);
+export const socket = new WebSocket(`${config.protocols.websocket}://${window.location.hostname}:${config.port.websocket}`);
 
 // -- http --
 /**
