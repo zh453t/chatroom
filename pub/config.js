@@ -6,6 +6,7 @@ export default {
 	hostname: 'localhost',
 
 	dirs: {
+		static: './pub',
 		message: './pub/database/messages.json',
 		rating: './pub/database/ratings.json',
 		reply: './pub/database/replies.json',

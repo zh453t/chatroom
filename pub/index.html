@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 		<title>chatroom</title>
 		<link rel="stylesheet" href="./css/style.css" />
 		<script type="module" async src="./js/controller.js"></script>
@@ -10,21 +9,23 @@
 
 	<body>
 		<!-- 标题 title -->
-		<h2>
-			<span>chatroom</span>
-			<div class="time">
-				<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-					<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" fill-rule="evenodd"></path>
-				</svg>
-				<time id="time"></time>
-			</div>
-		</h2>
+		<header>
+			<h2>
+				<span>chatroom</span>
+				<div class="time">
+					<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+						<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" fill-rule="evenodd"></path>
+					</svg>
+					<time id="time"></time>
+				</div>
+			</h2>
+		</header>
 
-		<!-- 表单 form -->
+		<!-- 输入表单 -->
 		<section class="input-form">
 			<form class="chat-input">
-				<textarea name="text" type="text" class="input--textarea" placeholder=""></textarea>
-				<label class="username--input">昵称：<input type="text" name="user" /></label>
+				<textarea name="text" class="input-textarea" placeholder="输入消息..."></textarea>
+				<label class="username-label">昵称：<input type="text" name="user" /></label>
 				<button type="submit">提交</button>
 			</form>
 		</section>

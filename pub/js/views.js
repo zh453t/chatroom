@@ -1,11 +1,11 @@
-"use strict";
-import { Message, Reply, Rating } from "./structs.js";
-import { state } from "./model.js";
+'use strict';
+import { Message, Reply, Rating } from './structs.js';
+import { state } from './model.js';
 const icons = {
-  clockIcon: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+	clock: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 <path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" fill-rule="evenodd"></path>
 </svg>`,
-  userIcon: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+	user: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 <path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" fill-rule="evenodd"></path>
 </svg>`,
 };
@@ -15,14 +15,7 @@ class ChatView {
 	msgContainer = document.querySelector('.chat-messages');
 
 	// svg 图表
-	icons = {
-		clockIcon: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" fill-rule="evenodd"></path>
-</svg>`,
-		userIcon: `<svg class="icon" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" fill-rule="evenodd"></path>
-</svg>`,
-	};
+	icons = icons;
 
 	/**
 	 * 生成消息元素
@@ -46,11 +39,11 @@ class ChatView {
 
 		const infoCellTime = document.createElement('div');
 		infoCellTime.classList.add('info-cell');
-		infoCellTime.innerHTML = `${this.icons.clockIcon}${date}`;
+		infoCellTime.innerHTML = `${this.icons.clock}${date}`;
 
 		const infoCellUser = document.createElement('div');
 		infoCellUser.classList.add('info-cell');
-		infoCellUser.innerHTML = `${this.icons.userIcon}<span class="msg-user">${message.user}</span>`;
+		infoCellUser.innerHTML = `${this.icons.user}<span class="msg-user">${message.user}</span>`;
 
 		smallerText.appendChild(infoCellTime);
 		smallerText.appendChild(infoCellUser);
@@ -116,7 +109,7 @@ class ChatView {
 
 	/**
 	 * 添加消息
-	 *  @param {Message} message - 消息
+	 *	@param {Message} message - 消息
 	 * */
 	append(message) {
 		const childNodes = this.msgContainer.children;
@@ -151,7 +144,7 @@ class ReplyView extends ChatView {
 		const infoCell = document.createElement('div');
 		infoCell.classList.add('info-cell');
 		const time = new Date(reply.time).toLocaleString();
-		infoCell.innerHTML = `${this.icons.clockIcon}${time}`;
+		infoCell.innerHTML = `${this.icons.clock}${time}`;
 
 		replyInfo.appendChild(infoCell);
 
@@ -201,24 +194,23 @@ class ReplyView extends ChatView {
 
 // 评分
 class RatingsView {
-  // avgRating;
-  get #ratingContainers() {
-    return [...document.querySelectorAll(".ratingBlock")];
-  }
-  chatContainer = document.querySelector(".chat-messages");
+	get #ratingContainers() {
+		return [...document.querySelectorAll('.ratingBlock')];
+	}
+	chatContainer = document.querySelector('.chat-messages');
 
-  /**
-   * <section class="ratingBlock"> 事件监听器 | .ratingBlock click event listener
-   * @param {function} handler
-   */
-  onclick(handler) {
-    this.chatContainer.addEventListener("click", (e) => {
-      const ratingBlock = e.target.closest(".ratingBlock");
-      if (!ratingBlock) return;
-      const id = ratingBlock.dataset.id;
-      handler(id);
-    });
-  }
+	/**
+	 * <section class="ratingBlock"> 事件监听器 | .ratingBlock click event listener
+	 * @param {function} handler
+	 */
+	onclick(handler) {
+		this.chatContainer.addEventListener('click', (e) => {
+			const ratingBlock = e.target.closest('.ratingBlock');
+			if (!ratingBlock) return;
+			const id = ratingBlock.dataset.id;
+			handler(id);
+		});
+	}
 
 	/**
 	 * 渲染评分
@@ -299,18 +291,17 @@ class RatingsView {
 	#renderBar(ratingBar, ratingValue) {
 		ratingBar.style.width = `${ratingValue}%`;
 
-    if (ratingValue < 60) ratingBar.classList.add("red");
-    else if (ratingValue < 80) ratingBar.classList.add("yellow");
-    else ratingBar.classList.add("green");
-  }
+		if (ratingValue < 60) ratingBar.classList.add('red');
+		else if (ratingValue < 80) ratingBar.classList.add('yellow');
+		else ratingBar.classList.add('green');
+	}
 }
 
 // 表单
-
 class InputView {
-  #form = document.querySelector("form.chat-input");
-  #inputEl = this.#form.querySelector(".input--textarea");
-  #userEl = this.#form.querySelector(`input[name="user"]`);
+	#form = document.querySelector('form.chat-input');
+	#inputEl = this.#form.querySelector('.input-textarea');
+	#userEl = this.#form.querySelector(`input[name="user"]`);
 
 	/**
 	 * 文本输入时执行传入的函数
@@ -344,13 +335,13 @@ class InputView {
 
 // 时间
 class Time {
-  #timeElememt = document.querySelector("#time");
+  #timeElement = document.querySelector("#time");
   /**
    * render time
    * @param {string} time locale time string
    */
   #render(time) {
-    this.#timeElememt.textContent = time;
+    this.#timeElement.textContent = time;
   }
   constructor() {
     this.#render(new Date().toLocaleTimeString());

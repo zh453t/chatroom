@@ -6,14 +6,17 @@ import config from './pub/config.js';
 
 // -- HTTP --
 const app = express();
-app.use(express.static('./pub'));
+app.use(express.static(config.dirs.static));
 
 app.listen(config.port.http, config.hostname, () => {
 	console.info(`[HTTP] Listening on ${config.hostname}:${config.port.http}`);
 });
 
 // -- WebSocket --
-const WSServer = new WebSocketServer({ port: config.port.websocket });
+const WSServer = new WebSocketServer({
+	port: config.port.websocket,
+	closeCode: 80233, // 标准的关闭码
+});
 
 // WebSocket Helpers
 const updateFile = async (data) => {
@@ -26,10 +29,12 @@ const updateFile = async (data) => {
 		// 读取文件，如果文件不存在，则初始化为空数组
 		let previousData = [];
 		try {
+			await fs.access(path);
 			const fileContent = await fs.readFile(path, 'utf8');
 			previousData = JSON.parse(fileContent);
 		} catch (error) {
 			if (error.code !== 'ENOENT') throw error; // 忽略文件不存在的错误
+			else console.error(`[WebSocket] File ${path} not found`);
 		}
 
 		// rating 因为数据结构不同，单独处理
@@ -50,7 +55,7 @@ const updateFile = async (data) => {
 		}
 		await fs.writeFile(path, JSON.stringify(previousData, null, 2));
 	} catch (error) {
-		console.error(error);
+		console.error('Error updating file:', error);	
 	}
 };
 
@@ -66,6 +71,7 @@ WSServer.on('connection', (ws) => {
 	console.info(`[WebSocket] NEW CONNECTION on ${config.hostname}:${config.port.websocket}`);
 	// ws.send('Welcome to the server!');
 	ws.on('message', (data, isBinary) => {
+		// 二进制数据忽略
 		// JSON 解析并冻结
 		data = Object.freeze(JSON.parse(data));
 
