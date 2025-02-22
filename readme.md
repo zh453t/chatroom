@@ -1,7 +1,10 @@
 # 安装
+## 不安装 `JavaScript` 运行时
+`release` 中有 `bun build --compile` 后的 exe 文件 (解压后约 110MB)，可以直接运行。
 ## 使用 `Bun` (推荐)
-1. 安装 `Bun` (`irm bun.sh/install.ps1 | iex`)
-2. `bun run bun.js`
+```bash
+bun run bun.js
+```
 ## 使用 `Deno`
 ```bash
 deno run --allow-net --allow-read --allow-write --allow-env deno.js
