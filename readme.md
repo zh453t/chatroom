@@ -1,7 +1,13 @@
 # 安装
-环境需求：
- - node.js
+## 使用 `Bun` (推荐)
+1. 安装 `Bun` (`irm bun.sh/install.ps1 | iex`)
+2. `bun run bun.js`
+## 使用 `Deno`
+```bash
+deno run --allow-net --allow-read --allow-write --allow-env deno.js
+```
 
+## 使用 `node.js`
 ```bash
 npm install express ws
 node server.js

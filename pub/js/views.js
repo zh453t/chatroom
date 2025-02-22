@@ -99,12 +99,16 @@ class ChatView {
 	 * @param {Message[]} messages - 消息数组
 	 */
 	render(messages) {
-		// 创建文档片段。将所有消息添加到文档片段中，然后一次性添加到 DOM 中
-		const fragment = document.createDocumentFragment();
+		// 创建文档片段。将每条消息分别添加到文档片段中，然后倒序添加到 DOM 中，保证时间靠后的消息靠前显示
+		let fragments = [];
 		messages.forEach((message) => {
+			const fragment = document.createDocumentFragment();
 			fragment.appendChild(this.#generateElement(message));
+			fragments.push(fragment)
 		});
-		this.msgContainer.appendChild(fragment);
+		fragments.forEach((fragment) => {
+			this.msgContainer.prepend(fragment);
+		})
 	}
 
 	/**

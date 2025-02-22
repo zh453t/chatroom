@@ -89,7 +89,7 @@ const broadcast = (data) => {
 WSServer.on('connection', (ws) => {
 	console.info(`[WebSocket] NEW CONNECTION on ${config.hostname}:${config.port.websocket}`);
 	// ws.send('Welcome to the server!');
-	ws.on('message', (data, isBinary) => {
+	ws.on('message', (data) => {
 		// 二进制数据忽略
 		// JSON 解析并冻结
 		data = Object.freeze(JSON.parse(data));
